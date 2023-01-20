@@ -5,13 +5,17 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/mydata', 
-{ useNewUrlParser: true },mongoose.set('strictQuery', false));
+mongoose.connect(
+  //Enter cluster link here
+  "mongodb://localhost:27017/newone",
+  { useNewUrlParser: true },
+  mongoose.set("strictQuery", false)
+);
 
 // Create MongoDB Schema
 const dataSchema = new mongoose.Schema({
-  name: String,
-  id: Number
+  name: {type:String,required:true},
+  
 });
 
 const Data = mongoose.model('Data', dataSchema);
@@ -22,7 +26,7 @@ app.get("/", (req,res) => {
   res.send("all 1ohk")
 })
 
-app.get("/alldata", async (req,res)=> {
+app.get("/data", async (req,res)=> {
   try{
     const items = await Data.find();
     res.send(items);
@@ -33,12 +37,16 @@ app.get("/alldata", async (req,res)=> {
   }
 });
 
-app.post('/data', (req, res) => {
-  const data = new Data(req.body);
-  data.save()
-  res.send(data)
-    .then(() => res.status(200).send('Data saved'))
-    .catch(error => console.error(error));
+app.post('/data',async (req, res) => {
+const {name}=req.body;
+
+try {
+  const data=new Data({name})
+  await data.save();
+  return res.status(200).send({data})
+} catch (error) {
+  return res.status(500).send({"message":"Something went wrong"})
+}
 });
 
 app.get('/data/:id', (req, res) => {
@@ -47,6 +55,6 @@ app.get('/data/:id', (req, res) => {
     .catch(error => res.status(500).send(error));
 });
 
-app.listen(8081, () => console.log('Server listening on port 8081 successfully'));
+app.listen(8080, () => console.log('Server listening on port 8080 successfully'));
 
 
